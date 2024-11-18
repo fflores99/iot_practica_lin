@@ -24,11 +24,4 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>source/driver_lin</name>
-			<type>2</type>
-			<locationURI>PARENT-2-PROJECT_LOC/driver_lin</locationURI>
-		</link>
-	</linkedResources>
 </projectDescription>

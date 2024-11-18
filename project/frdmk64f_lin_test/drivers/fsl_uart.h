@@ -71,6 +71,7 @@ enum _uart_status
     kStatus_UART_BaudrateNotSupport =
         MAKE_STATUS(kStatusGroup_UART, 13), /*!< Baudrate is not support in current clock source */
     kStatus_UART_IdleLineDetected = MAKE_STATUS(kStatusGroup_UART, 14), /*!< UART IDLE line detected. */
+	kStatus_Uart_LinSyncBreak = MAKE_STATUS(kStatusGroup_UART, 15)
 };
 
 /*! @brief UART parity mode. */

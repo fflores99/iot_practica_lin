@@ -70,6 +70,10 @@ static void UART_RTOS_Callback(UART_Type *base, uart_handle_t *state, status_t s
         xResult =
             xEventGroupSetBitsFromISR(handle->rxEvent, RTOS_UART_HARDWARE_BUFFER_OVERRUN, &xHigherPriorityTaskWoken);
     }
+    else if (status == kStatus_Uart_LinSyncBreak)
+    {
+    	xResult = xEventGroupSetBitsFromISR(handle->linEvent, RTOS_LIN_SYNC_BREAK, &xHigherPriorityTaskWoken);
+    }
 
     if (xResult != pdFAIL)
     {
@@ -156,6 +160,15 @@ int UART_RTOS_Init(uart_rtos_handle_t *handle, uart_handle_t *t_handle, const ua
         vSemaphoreDelete(handle->txSemaphore);
         return kStatus_Fail;
     }
+
+    handle->linEvent = xEventGroupCreate();
+    if (NULL == handle->linEvent)
+    {
+        vEventGroupDelete(handle->linEvent);
+        vSemaphoreDelete(handle->rxSemaphore);
+        vSemaphoreDelete(handle->txSemaphore);
+        return kStatus_Fail;
+    }
     UART_GetDefaultConfig(&defcfg);
 
     defcfg.baudRate_Bps = cfg->baudrate;
@@ -170,6 +183,10 @@ int UART_RTOS_Init(uart_rtos_handle_t *handle, uart_handle_t *t_handle, const ua
 
     UART_EnableTx(handle->base, true);
     UART_EnableRx(handle->base, true);
+
+//    /*Enables LIN Breeak Detection*/
+//    handle->base->BDH |= UART_BDH_LBKDIE_MASK;
+//    handle->base->S2 |= UART_S2_LBKDE_MASK | UART_S2_BRK13_MASK;
 
     return 0;
 }
@@ -250,6 +267,28 @@ int UART_RTOS_Send(uart_rtos_handle_t *handle, const uint8_t *buffer, uint32_t l
         retval = kStatus_Fail;
     }
 
+    return retval;
+}
+
+int UART_RTOS_WaitForSyncBreak(uart_rtos_handle_t *handle)
+{
+	EventBits_t ev;
+    /*Enables LIN Breeak Detection*/
+    handle->base->BDH |= UART_BDH_LBKDIE_MASK;
+    handle->base->S2 |= UART_S2_LBKDE_MASK | UART_S2_BRK13_MASK;
+	int retval = kStatus_Fail;
+    ev = xEventGroupWaitBits(handle->linEvent,
+    						RTOS_LIN_SYNC_BREAK,
+                             pdTRUE, pdFALSE, portMAX_DELAY);
+    if(ev & RTOS_LIN_SYNC_BREAK)
+    {
+    	xEventGroupClearBits(handle->linEvent, RTOS_LIN_SYNC_BREAK);
+    	retval = kStatus_Uart_LinSyncBreak;
+    }
+
+    /*Enables LIN Breeak Detection*/
+    handle->base->BDH &= ~UART_BDH_LBKDIE_MASK;
+    handle->base->S2 &= ~(UART_S2_LBKDE_MASK | UART_S2_BRK13_MASK);
     return retval;
 }
 

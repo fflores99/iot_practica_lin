@@ -80,6 +80,8 @@ typedef struct _uart_rtos_config
 #define RTOS_UART_RING_BUFFER_OVERRUN 0x2
 /*! @brief Event flag - hardware buffer overrun. */
 #define RTOS_UART_HARDWARE_BUFFER_OVERRUN 0x4
+
+#define RTOS_LIN_SYNC_BREAK 0x8
 /*@}*/
 
 /*! @brief UART FreeRTOS transfer structure. */
@@ -92,6 +94,7 @@ typedef struct _uart_rtos_handle
     SemaphoreHandle_t txSemaphore; /*!< TX semaphore for resource sharing */
     EventGroupHandle_t rxEvent;    /*!< RX completion event */
     EventGroupHandle_t txEvent;    /*!< TX completion event */
+    EventGroupHandle_t linEvent;
     void *t_state;                 /*!< Transactional state of the underlying driver */
 #if (configSUPPORT_STATIC_ALLOCATION == 1)
     StaticSemaphore_t txSemaphoreBuffer; /*!< Statically allocated memory for txSemaphore */
@@ -165,6 +168,7 @@ int UART_RTOS_Send(uart_rtos_handle_t *handle, const uint8_t *buffer, uint32_t l
  */
 int UART_RTOS_Receive(uart_rtos_handle_t *handle, uint8_t *buffer, uint32_t length, size_t *received);
 
+int UART_RTOS_WaitForSyncBreak(uart_rtos_handle_t *handle);
 /* @} */
 
 #if defined(__cplusplus)

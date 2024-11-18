@@ -1002,7 +1002,19 @@ void UART_TransferHandleIRQ(UART_Type *base, uart_handle_t *handle)
             handle->callback(base, handle, kStatus_UART_RxHardwareOverrun, handle->userData);
         }
     }
+//    handle->uart_rtos_handle->base->S2 |= (1<<2);
 
+    /*Lin Break*/
+    if (UART_S2_LBKDIF_MASK & base->S2)
+    {
+    	base->S2 |= UART_S2_LBKDIF_MASK;
+
+        /* Trigger callback. */
+        if (handle->callback)
+        {
+            handle->callback(base, handle, kStatus_Uart_LinSyncBreak, handle->userData);
+        }
+    }
     /* If IDLE line was detected. */
     if ((UART_S1_IDLE_MASK & base->S1) && (UART_C2_ILIE_MASK & base->C2))
     {

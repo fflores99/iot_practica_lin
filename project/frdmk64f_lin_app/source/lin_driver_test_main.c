@@ -269,4 +269,3 @@ static void	message_3_callback_slave(void* message)
 	message_data[7] = 86;
 }
 
-
